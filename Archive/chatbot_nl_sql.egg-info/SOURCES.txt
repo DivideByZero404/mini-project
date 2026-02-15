@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+app/__init__.py
+app/main.py
+app/ollama_client.py
+chatbot_nl_sql.egg-info/PKG-INFO
+chatbot_nl_sql.egg-info/SOURCES.txt
+chatbot_nl_sql.egg-info/dependency_links.txt
+chatbot_nl_sql.egg-info/requires.txt
+chatbot_nl_sql.egg-info/top_level.txt

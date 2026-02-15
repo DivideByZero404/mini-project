@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NL to SQL Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .chat-container { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; }
+        .message { margin-bottom: 10px; }
+        .user { color: blue; }
+        .assistant { color: green; }
+        input { width: 70%; padding: 10px; }
+        button { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>NL to SQL Chatbot</h1>
+    <div class="chat-container" id="chat"></div>
+    <input type="text" id="query" placeholder="Enter your query (e.g., 'Show me all products')" />
+    <button onclick="sendQuery()">Send</button>
+
+    <script>
+        const API_URL = 'http://localhost:8000/query';
+
+        async function sendQuery() {
+            const query = document.getElementById('query').value;
+            if (!query) return;
+
+            // Add user message
+            addMessage('user', query);
+
+            // Clear input
+            document.getElementById('query').value = '';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nl: query })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let botResponse = `**Generated SQL:**\n\`\`\`sql\n${data.sql}\n\`\`\`\n\n`;
+                    if (data.rows && data.rows.length > 0) {
+                        botResponse += `**Results (${data.rows.length} rows):**\n`;
+                        data.rows.forEach(row => botResponse += `- ${JSON.stringify(row)}\n`);
+                    } else {
+                        botResponse += '**Results:** No rows returned\n';
+                    }
+                    botResponse += `\n**Summary:** ${data.summary}`;
+                    addMessage('assistant', botResponse);
+                } else {
+                    addMessage('assistant', `Error: ${response.status} - ${response.statusText}`);
+                }
+            } catch (error) {
+                addMessage('assistant', `Error: ${error.message}`);
+            }
+        }
+
+        function addMessage(role, content) {
+            const chat = document.getElementById('chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.innerHTML = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content.replace(/\n/g, '<br>')}`;
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Allow Enter key to send
+        document.getElementById('query').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendQuery();
+        });
+    </script>
+</body>
+</html>
